@@ -16,7 +16,7 @@ pip install snakeviz cprofile
 Since the CUDA tensor operations in pytorch are all asynchronous. Normally the results returned by naive cprofiler will give you some wrong results. Fortunately we can enforce the cuda calls to be synchronized by simply setting the environment variable `CUDA_LAUNCH_BLOCKING=1`.
 
 ```bash
-CDUA_LAUNCH_BLOCKING=1 python -m cProfile -o program.prof program.py
+CUDA_LAUNCH_BLOCKING=1 python -m cProfile -o program.prof program.py
 ```
 
 ```bash
