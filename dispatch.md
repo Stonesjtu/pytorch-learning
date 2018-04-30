@@ -8,10 +8,10 @@ pytorch is a deep learning framework that is famous for the simplicity of protot
 
 For pytorch, or any other deep learning frameworks such as **mxnet**, **tensorflow**, the backend is usually written in *C/C++* for best performance. It does no more than maintaining tensor information and doing tensor(matrix) math.
 
-The backend of pytorch is somehow fragile because it re-uses many codes from project `torch`. Fortunately the pytorch community is working on a new unified tensor framework named `ATen` which is already used since version *0.3.0*. At the current stage, lib `ATen` defines data structures such as `Tensor`, `Storage`, `TensorInfo` ..., with more and more native
+The backend of pytorch is somehow fragile because it re-uses many codes from project **torch**. Fortunately the pytorch community is working on a new unified tensor framework named *ATen* which is already used since version *0.3.0*. At the current stage, lib *ATen* defines data structures such as `Tensor`, `Storage`, `TensorInfo` ..., with more and more native
 operations implemented independent of `TH` or `THC` library.
 
-Currently the computation is dispatched from `ATen` to the corresponding methods defined in `TH` (CPU), `THC` (GPU) and perhaps `THS` (sparse matrix operation). Below the more complicated `THC` backend is used to clarify the function path from `ATen` to real computing kernels.
+Currently the computation is dispatched from *ATen* to the corresponding methods defined in `TH` (CPU), `THC` (GPU) and perhaps `THS` (sparse matrix operation). Below the more complicated `THC` backend is used to clarify the function path from *ATen* to real computing kernels.
 
 ### invoking CUDA kernels
 
@@ -69,7 +69,7 @@ __global__ void THCudaTensor_gatherKernel(
 ## Binding `Python` and `C/C++` API
 There are two code generation schemes in Pytorch, native methods and `TH` `THC` dependent methods.
 For native methods, you can open file `aten/src/ATen/native/native_functions.yaml` and it's pretty easy to understand. (variants: function, methods, backend: CPU, GPU)
-For methods related to `TH` `THC` libraries, Pytorch uses `cwrap` to declare the binding of python call and its' corresponding `ATen` backend. Simply searching *.cwrap* file in pytorch repo will give you some hints (there may be only one
+For methods related to `TH` `THC` libraries, Pytorch uses `cwrap` to declare the binding of python call and its' corresponding *ATen* backend. Simply searching *.cwrap* file in pytorch repo will give you some hints (there may be only one
 cwrap file now).
 
 In detail, *cwrap* files are used to generate `PyMethods` for python type object `torch.Tensor` at building phase (when running `python setup.py build`). `PyMethod` is the inner mechanism of Cpython's object implementation, it enables python object to call native C functions, the ATEN function in Pytorch. After defining the proper `PyMethod`, the `tensor_GPU.index_select` call in Python finally invokes the corresponding C backend function `THCTensor_(indexSelect)`, and `tensor_CPU.index_select` calls `THTensor_(indexSelect)`.
