@@ -1,17 +1,17 @@
 # how pytorch dispatch the `Variable.index_select` and the auto-grad
 
-This post assumes readers have the basic concepts of the `Function` and `Variable` in `pytorch`.
+This post assumes readers have the basic concepts of the `Function` and `Variable` in *pytorch*.
 
 pytorch is a deep learning framework that is famous for the simplicity of prototyping and debugging. There are no separate graph defining and actual computing parts in pytorch, instead, it builds the computation graph on-the-fly.
 
-## The `C/C++` backend
+## The *C/C++* backend
 
-For pytorch, or any other deep learning frameworks such as `mxnet`, `tensorflow`, the backend is usually written in `C/C++` for best performance. It does no more than maintaining tensor information and doing tensor(matrix) math.
+For pytorch, or any other deep learning frameworks such as **mxnet**, **tensorflow**, the backend is usually written in *C/C++* for best performance. It does no more than maintaining tensor information and doing tensor(matrix) math.
 
-The backend of pytorch is somehow fragile because it re-uses many codes from project `torch`. Fortunately the pytorch community is working on a new unified tensor framework named `ATEN` which is already used since version `0.3.0`. At the current stage, lib `ATEN` defines data structures such as `Tensor`, `Storage`, `TensorInfo` ..., with more and more native
+The backend of pytorch is somehow fragile because it re-uses many codes from project `torch`. Fortunately the pytorch community is working on a new unified tensor framework named `ATen` which is already used since version *0.3.0*. At the current stage, lib `ATen` defines data structures such as `Tensor`, `Storage`, `TensorInfo` ..., with more and more native
 operations implemented independent of `TH` or `THC` library.
 
-Currently the computation is dispatched from `ATEN` to the corresponding methods defined in `TH` (CPU), `THC` (GPU) and perhaps `THS` (sparse matrix math). Below the more complicated `THC` backend is used to clarify the function path from `ATEN` to real computing kernels.
+Currently the computation is dispatched from `ATen` to the corresponding methods defined in `TH` (CPU), `THC` (GPU) and perhaps `THS` (sparse matrix operation). Below the more complicated `THC` backend is used to clarify the function path from `ATen` to real computing kernels.
 
 ### invoking CUDA kernels
 
@@ -68,15 +68,15 @@ __global__ void THCudaTensor_gatherKernel(
 
 ## Binding `Python` and `C/C++` API
 There are two code generation schemes in Pytorch, native methods and `TH` `THC` dependent methods.
-For native methods, you can open file `natives.yaml` and it's pretty easy to understand. (variants: function, methods, backend: CPU, GPU)
-For methods related to `TH` `THC` libraries, Pytorch uses `cwrap` to declare the binding of python call and its' corresponding ATEN backend. Simply searching `.cwrap` file in pytorch repo will give you some hints (there may be only one
+For native methods, you can open file `aten/src/ATen/native/native_functions.yaml` and it's pretty easy to understand. (variants: function, methods, backend: CPU, GPU)
+For methods related to `TH` `THC` libraries, Pytorch uses `cwrap` to declare the binding of python call and its' corresponding `ATen` backend. Simply searching *.cwrap* file in pytorch repo will give you some hints (there may be only one
 cwrap file now).
 
-In detail, `cwrap` files are used to generate `PyMethods` for python type object `torch.Tensor` at building phase (when running `python setup.py build`). `PyMethod` is the inner mechanism of Cpython's object implementation, it enables python object to call native C functions, the ATEN function in Pytorch. After defining the proper `PyMethod`, the `tensor_GPU.index_select` call in Python finally invokes the corresponding C backend function `THCTensor_(indexSelect)`, and `tensor_CPU.index_select` calls `THTensor_(indexSelect)`.
+In detail, *cwrap* files are used to generate `PyMethods` for python type object `torch.Tensor` at building phase (when running `python setup.py build`). `PyMethod` is the inner mechanism of Cpython's object implementation, it enables python object to call native C functions, the ATEN function in Pytorch. After defining the proper `PyMethod`, the `tensor_GPU.index_select` call in Python finally invokes the corresponding C backend function `THCTensor_(indexSelect)`, and `tensor_CPU.index_select` calls `THTensor_(indexSelect)`.
 
 ### how to read cwrap file
-name: the method name of ATEN and Python API
-cname: the backend name of library call
+**name**: the method name of *ATen* and *Python API*
+**cname**: the backend name of library call, the same as **name** is not specified
 
 The **cname** is important that you can search it in pytorch's directory to find the function definition/declaration. In 
 case many unrelated search results show up, you'd better limit the search scope to `.c/.cpp/.h` files.
@@ -85,13 +85,13 @@ See docs:
 `pytorch/aten/src/ATen/native/README.md`
 
 And source codes:
-`pytorch/aten/src/ATen/native/natives.yaml`
+`pytorch/aten/src/ATen/native/native_functions.yaml`
 `pytorch/aten/src/ATen/Declarations.cwrap`
 
 ## Defining the `forward`/`backward` pair
 In early version, pytorch uses hand-written `forward` and `backward` methods in each `Function` class. But now a separate declaration file  is employed to define the `forward`/`backward` pair for simplicity.
 
-Like the `Python/C binding`, the declaration file is also used to generate `Variable` methods at building stage.
+Like the *Python/C binding*, the declaration file is also used to generate `Variable` methods at building stage.
 e.g. for `Variable.index_select`, the gradient of self is obtained by calling the `grad.type().zeros(self.sizes()).index_add_(dim, index, grad)`.
 
 code snippets for `forward`/`backward` binding:
@@ -112,7 +112,7 @@ Here I extract some useful comments from the `derivatives.yaml`:
 >   Note that a single gradient entry can specify the gradient
 >   formula for multiple input names, by specifying a key
 >   "self, other" (see atan2 for an example).
-The values in this yaml file are standard `C++` (C++11 exactly) statements without trailing semi-colons, which will be invoked by `backward engine` to apply chain rule.
+The values in this yaml file are standard *C++* (C++11 exactly) statements without trailing semi-colons, which will be invoked by **backward engine** to apply chain rule.
 There are two approaches to defining the backward function, a simple one-liner or a more complex function defined in `pytorch/tools/autograd/templates/Functions.cpp`. For example, the backward function for `kthvalue()` is `select_backward()`,
 
 ```C
