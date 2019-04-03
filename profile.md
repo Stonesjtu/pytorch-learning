@@ -36,7 +36,7 @@ Instead of `snakeviz`, you can use `line-profiler` to get the time spend on each
 To use `line-profiler`, you should modify a few lines in your code, simply place a `@profile` decorator above the funtions or methods of insterest.
 ```bash
 pip install line-profiler
-CUDA_LAUNCH_BLOCKING=1 kern_prof -lv program.py
+CUDA_LAUNCH_BLOCKING=1 kernprof -lv program.py
 ```
 
 kernel level
