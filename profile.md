@@ -33,7 +33,10 @@ snakeviz --help
 
 - ( optional ) `line-profiler` for pure CLI profiling
 Instead of `snakeviz`, you can use `line-profiler` to get the time spend on each line of codes. As noted before, you should also set the `CUDA_LAUNCH_BLOCKING=1` for sensible profiling results.
+
+To use `line-profiler`, you should modify a few lines in your code, simply place a `@profile` decorator above the funtions or methods of insterest.
 ```bash
+pip install line-profiler
 CUDA_LAUNCH_BLOCKING=1 kern_prof -lv program.py
 ```
 
