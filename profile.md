@@ -6,8 +6,7 @@ python level
 
 #### requirements
 1. snakeviz
-2. cProfile
-3. line-profiler ( optional )
+2. line-profiler ( optional )
 ```bash
 pip install snakeviz cprofile
 ```
